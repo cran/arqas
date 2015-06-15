@@ -294,6 +294,9 @@ G_G_S <- function (arrivalDistribution=Exp(3), serviceDistribution=Exp(6), s=2, 
         
         tArr <- r(arrivalDistribution) (nClients+staClients)
         tServ <- r(serviceDistribution) (nClients+staClients)
+        if (any(tArr < 0)) stop("There's a problem with the Arrival Distribution, please check the parameters are correct.")
+        if (any(tServ < 0))stop("There's a problem with the Service Distribution, please check the parameters are correct.")
+        
         iArr <-1
         iServ <- 0
         bussyservs <- numeric()
@@ -511,6 +514,9 @@ G_G_1_K <- function (arrivalDistribution=Exp(3), serviceDistribution=Exp(6), K=2
         
         tArr <- r(arrivalDistribution) ((nClients+staClients)*2)
         tServ <- r(serviceDistribution) ((nClients+staClients)*2)
+        if (any(tArr < 0)) stop("There's a problem with the Arrival Distribution, please check the parameters are correct.")
+        if (any(tServ < 0))stop("There's a problem with the Service Distribution, please check the parameters are correct.")
+        
         iArr <- iServ <- 1
         sysClients <- simClients<- 0
         cron <- d <- c <- 0
@@ -707,6 +713,9 @@ G_G_S_K <- function(arrivalDistribution=Exp(3), serviceDistribution=Exp(6), s=2,
         
         tArr <- r(arrivalDistribution) ((nClients+staClients)*2)
         tServ <- r(serviceDistribution) ((nClients+staClients)*2)
+        if (any(tArr < 0)) stop("There's a problem with the Arrival Distribution, please check the parameters are correct.")
+        if (any(tServ < 0))stop("There's a problem with the Service Distribution, please check the parameters are correct.")
+        
         iArr <- iServ <- 1
         bussyservers <- rep(NA, s)
         sysClients <- simClients<- 0
@@ -917,6 +926,9 @@ G_G_1_INF_H <- function(arrivalDistribution=Exp(3), serviceDistribution=Exp(6), 
     
     tArr <- r(arrivalDistribution) ((nClients+staClients)*2)
     tServ <- r(serviceDistribution) ((nClients+staClients)*2)
+    if (any(tArr < 0)) stop("There's a problem with the Arrival Distribution, please check the parameters are correct.")
+    if (any(tServ < 0))stop("There's a problem with the Service Distribution, please check the parameters are correct.")
+    
     possibleClients <- tArr[1:H]
     iServ <- 1
     iArr <- H+1
@@ -1109,6 +1121,9 @@ G_G_S_INF_H <- function(arrivalDistribution=Exp(3), serviceDistribution=Exp(6), 
       
           tArr <- r(arrivalDistribution) ((nClients+staClients)*2)
           tServ <- r(serviceDistribution) ((nClients+staClients)*2)
+          if (any(tArr < 0)) stop("There's a problem with the Arrival Distribution, please check the parameters are correct.")
+          if (any(tServ < 0))stop("There's a problem with the Service Distribution, please check the parameters are correct.")
+          
           possibleClients <- tArr[1:H]
           bussyservers <- rep(NA, s)
           iServ <- 1
@@ -1330,6 +1345,9 @@ G_G_S_INF_H_Y <- function(arrivalDistribution=Exp(3), serviceDistribution=Exp(6)
         
         tArr <- r(arrivalDistribution) ((nClients+staClients)*2)
         tServ <- r(serviceDistribution) ((nClients+staClients)*2)
+        if (any(tArr < 0)) stop("There's a problem with the Arrival Distribution, please check the parameters are correct.")
+        if (any(tServ < 0))stop("There's a problem with the Service Distribution, please check the parameters are correct.")
+        
         possibleClients <- tArr[1:H]
         #   bussyservers <- rep(-1, s)
         bussyservers <- rep(NA, s)
@@ -1565,6 +1583,9 @@ G_G_INF <- function(arrivalDistribution=Exp(3), serviceDistribution=Exp(6), staC
       
       tArr <- r(arrivalDistribution) ((nClients+staClients)*2)
       tServ <- r(serviceDistribution) ((nClients+staClients)*2)
+      if (any(tArr < 0)) stop("There's a problem with the Arrival Distribution, please check the parameters are correct.")
+      if (any(tServ < 0))stop("There's a problem with the Service Distribution, please check the parameters are correct.")
+      
       iServ <- iArr <- 1
       sysClients <- 0
       simClients <- cron <- c <- d <- 0
@@ -1777,6 +1798,8 @@ ClosedNetwork <- function(serviceDistribution=c(Exp(5), Exp(5), Exp(10), Exp(15)
       maxserv <- max(s)
       map <- function(f) {f(staClients+transitions)}
       tServ <- matrix(sapply(lapply(serviceDistribution, r), map, simplify=TRUE), nrow=((staClients+transitions)*2), ncol=nodes )
+      if (any(tServ < 0))stop("There's a problem with the Service Distribution, please check the parameters are correct.")
+      
       iServ <- rep(1, nodes)
       rand <- r(Unif()) (staClients+transitions)
       simClients <- 0
@@ -2046,6 +2069,9 @@ OpenNetwork <- function(arrivalDistribution=c(Exp(20), Exp(30)), serviceDistribu
       map <- function(f) {f((staClients+transitions)*2)}
       tServ <- matrix(sapply(lapply(serviceDistribution, r), map, simplify=TRUE), nrow=((staClients+transitions)*2), ncol=nodes )
       tArr <- matrix(sapply(lapply(arrivalDistribution[[1]], r), map, simplify=TRUE), nrow=((staClients+transitions)*2), ncol=length(arrivalDistribution[[2]]), dimnames=list(1:((staClients+transitions)*2), arrivalDistribution[[2]]))
+      if (any(tArr < 0)) stop("There's a problem with the Arrival Distribution, please check the parameters are correct.")
+      if (any(tServ < 0))stop("There's a problem with the Service Distribution, please check the parameters are correct.")
+      
       iServ <- rep(1, nodes)
       iArr <- rep(1, nodes)
       rand <- r(Unif()) ((staClients+transitions)*2)

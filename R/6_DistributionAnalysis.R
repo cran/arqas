@@ -9,7 +9,7 @@
 #' 
 #' fitData(mydata)
 #' @family DistributionAnalysis
-fitData <- function (data, ldistr= c("exp", "norm", "weibull", "unif", "lnorm", "gamma")) {
+fitData <- function (data, ldistr= c("exp", "norm", "weibull", "unif", "lnorm", "gamma", "beta")) {
   if (is.null(data)) stop("Argument 'data' must be an array of numeric values")
   options(warn=-1)
   res <-lapply(ldistr, function(x) {tryCatch(fitdist(data, x, method="mle", start=NULL),

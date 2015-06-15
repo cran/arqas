@@ -224,22 +224,30 @@ print.MarkovianModel <- function(x, ...) {
 #' @param object Markovian Model
 #' @param t Range of t
 #' @param n Range of n
+#' @param only String that allows to show only one of the variables. Can be "t" or "n".
+#' @param graphics Type of graphics: "graphics" uses the basic R plot and "ggplot2" the library ggplot2
 #' @param ... Further arguments passed to or from other methods.
 #' @method summary MarkovianModel
 #' @export
-summary.MarkovianModel <- function(object, t=list(range=seq(object$out$w, object$out$w*3, length.out=100)), n=c(0:5), ...) {
-  if (!is.null(t) && !is.null(n)) {
-      par(mfrow=c(2,1)) 
-      summaryWtWqt(object, t, "graphics")
-      summaryPnQn(object, n, "graphics")
-  } else {
-    if (!is.null(t)) {
-        summaryWtWqt(object, t)
-    }
-    if (!is.null(n))  {
-        summaryPnQn(object, n)
-    }
-  }
+summary.MarkovianModel <- function(object, t=list(range=seq(object$out$w, object$out$w*3, length.out=100)), n=c(0:5), only=NULL, graphics="ggplot2",...) {
+  switch(graphics,
+      "ggplot2" = {if (is.null(only)) {
+                        layout(matrix(c(1,2), nrow=2))
+                        gridExtra::grid.arrange(summaryWtWqt(object, t, graphics),
+                                     summaryPnQn(object, n, graphics))
+                   } else if(only == "t") 
+                          summaryWtWqt(object, t, graphics)
+                     else if(only == "n") 
+                          summaryPnQn(object, n , graphics)
+                   },
+      "graphics"= {if (is.null(only))
+                        par(mfrow=c(2,1)) 
+                   if(is.null(only) || only == "t" ) 
+                        summaryWtWqt(object, t, graphics)
+                   if(is.null(only) || only == "n" )
+                        summaryPnQn(object, n , graphics)
+      
+      })
 }
 
 #' Plot of the waiting times of a Markovian Model

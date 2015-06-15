@@ -25,9 +25,9 @@
 #' # The duration of the backup is also random and
 #' # follows an exponential distribution with mean
 #' # 5 minutes.
-#' # There are a single tape drive to perform the
-#' # back-up process, the station remained on hold
-#' # if is busy.
+#' # There exists a single tape drive to perform the
+#' # back-up process, the station will wait if it is
+#' # busy.
 #' 
 #' M_M_1_INF_H(lambda =1/2, mu=60/5, h=5)
 #' 
@@ -292,13 +292,13 @@ FW.M_M_S_INF_H <- function(qm, x) {
 #' \item{wq}{Waiting time in the queue: \ifelse{latex}{\eqn{W_q}}{\out{<i>W<sub>q</sub></i>}}}
 #' \item{eff}{System efficiency: \ifelse{latex}{\eqn{Eff = W/(W-W_q)}}{\out{<i>Eff = W/(W-W<sub>q</sub></i>)}}}
 #' @examples
-#' #A bank has 5 ATMs. Occasionally one is damaged
-#' #until one of the two hired technicians fix it.
-#' #It is known that the mean time to repair follows
-#' #an exponential distribution with mean 10 minutes,
-#' #while the distribution of time an ATM is run
-#' #until it breaks down it is also exponential with
-#' #mean 2 hours. The bank has an ATM extra to
+#' #A bank has 5 ATMs. Occasionally one ot them is 
+#' #damaged until one of the two hired technicians
+#' #repairs it. It is known that the mean time to repair
+#' #follows an exponential distribution with mean 10
+#' #minutes, while the distribution of time an ATM
+#' #is run until it breaks down it is also exponential
+#' #with mean 2 hours. The bank has an ATM extra to
 #' #replace a damaged one.
 #' 
 #' M_M_S_INF_H_Y(lambda=1/2, mu=60/10, s=2, h=5, y=1)

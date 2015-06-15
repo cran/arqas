@@ -5,7 +5,8 @@
 \title{Shows the main graphics of the parameters of a Markovian Model}
 \usage{
 \method{summary}{MarkovianModel}(object, t = list(range = seq(object$out$w,
-  object$out$w * 3, length.out = 100)), n = c(0:5), ...)
+  object$out$w * 3, length.out = 100)), n = c(0:5), only = NULL,
+  graphics = "ggplot2", ...)
 }
 \arguments{
 \item{object}{Markovian Model}
@@ -13,6 +14,10 @@
 \item{t}{Range of t}
 
 \item{n}{Range of n}
+
+\item{only}{String that allows to show only one of the variables. Can be "t" or "n".}
+
+\item{graphics}{Type of graphics: "graphics" uses the basic R plot and "ggplot2" the library ggplot2}
 
 \item{...}{Further arguments passed to or from other methods.}
 }
