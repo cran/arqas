@@ -17,16 +17,16 @@
 
 \method{plot}{list}(x, minrange = 1, maxrange, var = "L",
   graphics = "ggplot2", depth = maxrange - minrange + 1, nSimulation = 1,
-  ...)
+  showMean = TRUE, showValues = TRUE, ...)
 }
 \arguments{
 \item{x}{Simulated Model
 #}
 
-\item{minrange}{Number of customer needed to establish the start of the plot
+\item{minrange}{Number of customers needed to establish the start of the plot
 #}
 
-\item{maxrange}{Number of customer needed to establish the end of the plot
+\item{maxrange}{Number of customers needed to establish the end of the plot
 #}
 
 \item{var}{This variable indicates the parameter of the queue to show in graphic (L, Lq, W, Wq, Clients, Intensity)
@@ -43,6 +43,10 @@
 
 \item{nSimulation}{Only used when the var param is equal to "Clients". Selects one of the multiple simulations to show the evolution of the Clients.
 #}
+
+\item{showMean}{Shows the mean of all the simulations}
+
+\item{showValues}{Shows the values of all the simulations}
 }
 \description{
 #Shows a plot of the evolution of a variable during the simulation

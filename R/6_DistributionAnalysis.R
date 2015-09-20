@@ -2,7 +2,7 @@
 #' 
 #' @param data data to estimate parameters
 #' @param ldistr A list of distributions
-#' @return A list of estimate parameters for each distribution
+#' @return A list of estimated parameters for each distribution
 #' @export
 #' @examples
 #' mydata <- rnorm(100, 10, 0.5)
@@ -51,7 +51,7 @@ goodnessFit <- function(lfitdata) {
       testks <- eval(parse(text=callfun))
       argschisq <- with(i, c(list(x=data, distribution = distname), estimate) )
       dataChisq <- do.call("chisq.test.cont", args = argschisq)
-      res <- rbind(res, data.frame(distrnames=i$distname, chisq=dataChisq$statistic, chisq.pvalue=format(round(dataChisq$p.value, 3), nsmall=3), ks=testks$statistic, ks.pvalue=format(round(testks$p.value, 3), nsmall=3)))
+      res <- rbind(res, data.frame(distrnames=i$distname, chisq=dataChisq$statistic, chisq.pvalue=format(round(dataChisq$p.value, 3), nsmall=3), ks=testks$statistic, ks.pvalue=format(round(testks$p.value, 3), nsmall=3), row.names=NULL))
   }
   class(res) <- c("GoodnessFit", class(res))
   return(res)
@@ -61,27 +61,50 @@ goodnessFit <- function(lfitdata) {
 #' 
 #' @param lfitdata a list of fitted data 
 #' @param graphics Type of graphics: "graphics" uses the basic R plot and "ggplot2" the library ggplot2
+#' @param show Select what plots to show. Can be:
+#'              "all",
+#'              "dens" for the histogram, 
+#'              "cdf" for the CDF's or 
+#'              "qq" for the Q-Q-plot
 #' @export
 #' @family DistributionAnalysis
-summaryFit <- function(lfitdata, graphics="ggplot2") {
+summaryFit <- function(lfitdata, graphics="ggplot2", show="all") {
   ltext <- names(lfitdata)
   if (ltext[1] == "estimate")
     ltext <- lfitdata$distname
-  layout(matrix(c(1,1,2,3), 2, 2, byrow = TRUE))
+  
+  
   switch (graphics, 
-          "graphics" = {denscomp(lfitdata, legendtext=ltext)
-                        cdfcomp(lfitdata, legendtext=ltext)
-                        qqcomp(lfitdata,  legendtext=ltext)},
-          "ggplot2" = {grid.arrange(denscompggplot2(lfitdata),
-                                 cdfcompggplot2(lfitdata),
-                                 qqcompggplot2(lfitdata), ncol=2
-                       )}
+          "graphics" = {if (show == "all")
+                          graphics::layout(matrix(c(1,1,2,3), 2, 2, byrow = TRUE))
+                        else
+                          graphics::layout(matrix(c(1)), 1, 1)
+                        if (any(show == c("all", "dens")))
+                            denscomp(lfitdata, legendtext=ltext)
+                        if (any(show == c("all", "cdf")))
+                            cdfcomp(lfitdata, legendtext=ltext)
+                        if (any(show == c("all", "qq")))
+                            qqcomp(lfitdata,  legendtext=ltext)},
+          "ggplot2" = { switch(show,
+                               "all" = {grid::grid.newpage()
+                                        grid::pushViewport(grid::viewport(layout = grid::grid.layout(2, 2)))
+                                        print(denscompggplot2(lfitdata),
+                                              vp = grid::viewport(layout.pos.row = 1, layout.pos.col = 1:2))
+                                        print(cdfcompggplot2(lfitdata),
+                                              vp = grid::viewport(layout.pos.row = 2, layout.pos.col = 1))
+                                        print(qqcompggplot2(lfitdata),
+                                              vp = grid::viewport(layout.pos.row = 2, layout.pos.col = 2))},
+                               "dens" = {denscompggplot2(lfitdata)},
+                               "cdf"  = {cdfcompggplot2(lfitdata)},
+                               "qq"   = {qqcompggplot2(lfitdata)})
+                            
+                      }
           )
 }
 
 #' Density histogram Plot using the package ggplot2
 #' 
-#' @param lfitdata a list of data fitted
+#' @param lfitdata a list of fitted data
 #' @export
 #' @family DistributionAnalysis
 denscompggplot2 <- function(lfitdata){
@@ -94,7 +117,7 @@ denscompggplot2 <- function(lfitdata){
      n <- lfitdata[[1]]$n
      y <- lfitdata[[1]]$data
    }
-   aux <- hist(y, plot=FALSE)
+   aux <- graphics::hist(y, plot=FALSE)
    data <- data.frame(data=aux$mids, Density=aux$density)
    resplot <- ggplot(data, aes(x=data, y=Density)) + geom_histogram(stat="identity", binwidh = 1)
    x <- seq(aux$breaks[1], aux$breaks[length(aux$breaks)], length.out=n)
@@ -189,10 +212,10 @@ chisq.test.cont <- function(x, distribution = "norm", nclasses = min(100, max(3,
   
   # Plots and frequencies
   if (output) {
-    xhist <- hist(x, breaks = xbreaks, freq = FALSE, lty = 2, border = "grey50")
-    curve(d.distrib(x, ...), add = TRUE)
+    xhist <- graphics::hist(x, breaks = xbreaks, freq = FALSE, lty = 2, border = "grey50")
+    graphics::curve(d.distrib(x, ...), add = TRUE)
   } else {
-    xhist <- hist(x, breaks = xbreaks, plot = FALSE)
+    xhist <- graphics::hist(x, breaks = xbreaks, plot = FALSE)
   }
   
   # statistic and p-value compution
@@ -204,7 +227,7 @@ chisq.test.cont <- function(x, distribution = "norm", nclasses = min(100, max(3,
   names(STATISTIC) <- "X-squared"
   PARAMETER <- nclasses - nestpar - 1
   names(PARAMETER) <- "df"
-  PVAL <- pchisq(STATISTIC, PARAMETER, lower.tail = FALSE)
+  PVAL <- stats::pchisq(STATISTIC, PARAMETER, lower.tail = FALSE)
   
   # Prepare results
   classes <- format(xbreaks)

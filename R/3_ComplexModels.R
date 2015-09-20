@@ -26,7 +26,7 @@
 #' # follows an exponential distribution with mean
 #' # 5 minutes.
 #' # There exists a single tape drive to perform the
-#' # back-up process, the station will wait if it is
+#' # back-up process and the station will wait if it is
 #' # busy.
 #' 
 #' M_M_1_INF_H(lambda =1/2, mu=60/5, h=5)
@@ -266,7 +266,7 @@ FW.M_M_S_INF_H <- function(qm, x) {
   mu <- rate(qm$serviceDistribution)
   integrateaux <- function(t) {
     fwaux <- function(x) {FWq(qm, t-x)*mu*exp(mu*x*-1)}
-    integrate(fwaux, lower=0, upper=t)
+    stats::integrate(fwaux, lower=0, upper=t)
   }
   #Calculamos W(t) a partir de la integral
   return(unlist(sapply(x, integrateaux)[1,], use.names=FALSE))    
@@ -295,9 +295,9 @@ FW.M_M_S_INF_H <- function(qm, x) {
 #' #A bank has 5 ATMs. Occasionally one ot them is 
 #' #damaged until one of the two hired technicians
 #' #repairs it. It is known that the mean time to repair
-#' #follows an exponential distribution with mean 10
-#' #minutes, while the distribution of time an ATM
-#' #is run until it breaks down it is also exponential
+#' #each ATM follows an exponential distribution with mean
+#' #10 minutes, while the distribution of time an ATM
+#' #works is also exponential
 #' #with mean 2 hours. The bank has an ATM extra to
 #' #replace a damaged one.
 #' 
@@ -432,7 +432,7 @@ FW.M_M_S_INF_H_Y <- function(qm, x) {
 #' #rather well by a Poisson distribution with a mean of
 #' #100000/hr. 
 #' #There are five major TV stations, and a given person
-#' #choose among these essentially at random.
+#' #chooses among them essentially at random.
 #' #Surveys have also shown that the average person tunes
 #' #in for 90 min and that viewing times are approximately
 #' #exponentially distributed.
@@ -472,12 +472,14 @@ Pn.M_M_INF <- function(qm, n) {
   if (minval < 0) {stop("P(n): Index out of limits: 0:Inf\n")}
   
   lambda <- rate(qm$arrivalDistribution)
-  mu <- rate(qm$serviceDistribution)        
-  cn <- c(1, lambda/((1:maxval)*mu))
-  cn <- cumprod(cn)
-  
-  pn <- c(qm$out$p0, cn[-1]*qm$out$p0)
-  return(pn[n+1])
+  mu <- rate(qm$serviceDistribution)   
+  if (maxval > 0) {
+    cn <- c(1, lambda/((1:maxval)*mu))
+    cn <- cumprod(cn)
+  } else
+    cn <- c(1)
+  if (any(is.infinite(cn[n+1]))) warning("Possible overflow. Infinite detected. Try to change the parameters.")
+  return(cn[n+1]*qm$out$p0)
 }
 
 #' @describeIn FW Implements the method for a M/M/\eqn{\infty} queueing model
@@ -485,7 +487,7 @@ Pn.M_M_INF <- function(qm, n) {
 #' @usage NULL
 #' @export
 FW.M_M_INF <- function(qm, x) {
-  rep(0, length(x))
+  return(p(qm$serviceDistribution)(x))
 }
 
 #' @describeIn FWq Implements the method for a M/M/\eqn{\infty} queueing model

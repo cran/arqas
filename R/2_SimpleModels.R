@@ -16,7 +16,7 @@
 #' #A workstation with a single processor
 #' #runs programs with CPU time following
 #' #an exponential distribution with mean 3 minutes.
-#' #The programs arrives to the workstation following
+#' #The programs arrive to the workstation following
 #' #a Poisson process with an intensity of 15
 #' #programs per hour.
 #' 
@@ -465,7 +465,6 @@ FWq.M_M_S_K <- function(qm, x) {
       A <- A*((qm$servers*mu*x)/(n-qm$servers))
       S <- S + A
       B <- B + Qn(qm, n)*S
-      print(n)
     }
   }
   return(1-B*exp(-qm$servers*mu*x)) 
@@ -481,7 +480,7 @@ FW.M_M_S_K <- function(qm, x) {
   mu <- rate(qm$serviceDistribution)
   integrateaux <- function(t) {
     fwaux <- function(x) {FWq(qm, t-x)*mu*exp(mu*x*-1)}
-    integrate(fwaux, lower=0, upper=t)
+    stats::integrate(fwaux, lower=0, upper=t)
   }
   return(unlist(sapply(x, integrateaux)[1,], use.names=FALSE))
   

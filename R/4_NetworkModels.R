@@ -39,10 +39,10 @@ Tamdem <- function(n) {
 #' #The unique processsor in the first server can manage
 #' #100 tasks per minute, while the two processors in the
 #' #second server only can manage 25 task per minute. 
-#' #When a task is close to finish in the server 2, it creates
+#' #When a task is finishing in the server 2, it creates
 #' #a new task in the server 1 with a probability of 25%,
 #' #the task ends in the other case.
-#' #The tasks that ends in the server 1 creates a new one
+#' #The task that ends in the server 1 creates a new one
 #' #in the same server the 20% of the times and creates
 #' #a new one in the server 2 the 10% of the times, ending
 #' #in other case.
@@ -196,14 +196,13 @@ f_close <- function(ps, i, n) {
 #' @keywords internal
 calculateG <- function(ps) { 
   res <- matrix(c(1), nrow=ps$k, ncol=(ps$n+1))
-  for(i in 2:(ps$n+1)) {
-    res[1,i] <- f_close(ps, 1, i-1)
-    if (ps$k > 1)
-      for(j in 2:ps$k)
-        res[j, i] <- sum(res[j-1, i:1] * f_close(ps, j, 0:(i-1)))
-  }
+  res[1, 2:(ps$n+1)] <- f_close(ps, 1, 1:ps$n)
+  if (ps$k > 1)
+    for(i in 2:(ps$n+1)) {
+        for (j in 2:ps$k)
+          res[j, i] <- sum(res[j-1, i:1] * f_close(ps, j, 0:(i-1)))
+    }
   return(res)
-  
 }
 
 #' Probability of i clients in the last node of the network
@@ -262,9 +261,9 @@ CN_example <- function() {
 #' #      4           0.40   0.30  0.25  0.05
 #' 
 #' #The servers 1 and 2 have two processors and
-#' #each of one have a process time with exponential
-#' #distribution and capacitiy of 5 tasks per
-#' #minute.
+#' #each of one has a processing time following an
+#' #exponential distribution and capacity of 5
+#' #tasks per minute.
 #' #The servers 3 and 4 have a single processor
 #' #and they can serve 10 and 15 task per minute
 #' #respectively.
@@ -286,7 +285,9 @@ ClosedJacksonNetwork <- function(mu=c(5,5,10,15), s=c(2,2,1,1), p=matrix(c(0.25,
   
   sizemu <- length(mu)
   sizes <- length(s)
-  sizep <- if(is.null(output <- nrow(p))) length(p) else output
+  sizep <- nrow(p)
+  
+  if(is.null(sizep)) sizep <- length(p)
   
   if (sizemu != sizes || sizemu != sizep || sizes != sizep)
     stop("Arguments 'mu', 's' and 'p' must have the same length")
@@ -299,16 +300,15 @@ ClosedJacksonNetwork <- function(mu=c(5,5,10,15), s=c(2,2,1,1), p=matrix(c(0.25,
       }
   obj <- list(mu=mu, servers=s, prob=p, n=n)
   obj$k <- k <- length(mu)
+  id <- diag(k)
+  trasp <- t(p)
   if (!is.null(numCol <- ncol(p)) && length(p) > 2) {
-     id <- diag(k)
-     trasp <- t(p)
-     id <- id[-nrow(id),]
-     aux <- id - trasp[-nrow(trasp),]
-     A <- aux[,-1]
-     B <- -aux[,1]
+     id <- as.matrix(id[-k, -1])
+     A <- id - as.matrix(trasp[-k , -1])
+     B <- as.matrix(trasp[-k, 1])
+     B[1,1] <- -1 + B[1,1]
+     
      obj$lambda <- lambda <- c(1, solve(A, B))
-  } else if (length(p) == 2) {
-     obj$lambda <- lambda <- c(1, trasp[2,1]/trasp[2,2])  
   } else {
      obj$lambda <- lambda <- c(1)
   }
@@ -325,17 +325,9 @@ ClosedJacksonNetwork <- function(mu=c(5,5,10,15), s=c(2,2,1,1), p=matrix(c(0.25,
     if (is.null(obj$out$gkn)) obj$out$gkn <- obj$g[k, n+1]
     l <- sum(1:n * pnlast(obj, 1:n))
     if (node == k) {
-      #barlambda <- 0
-      #for (i in 1:n) {
-      #  if (i <= obj$servers[k]) {
-      #    barlambda <- barlambda + obj$mu[k]*i*pnlast(obj, i)
-      #  } else {
-      #    barlambda <- barlambda + obj$mu[k]*obj$servers[k]*pnlast(obj, i)
-      #  }
-      #}
       i <- 1:n
       auxmult <- ifelse(i <= obj$servers[k], i, obj$servers[k])
-      barlambda <- tail(cumsum(obj$mu[k]* auxmult * pnlast(obj, 1:n)), n=1)
+      barlambda <- utils::tail(cumsum(obj$mu[k]* auxmult * pnlast(obj, 1:n)), n=1)
       c <- barlambda/obj$lambda[k]
     } else {
       barlambda <- c*obj$lambda[node]

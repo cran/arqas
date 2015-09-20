@@ -60,7 +60,7 @@ FW <- function(qm, x) {UseMethod("FW", qm)}
 #'  @return \ifelse{latex}{\deqn{W_{q}(x)}}{\out{<i>W<sub>q</sub>(x)</i>}}
 #'  @rdname FWq
 #'  @examples
-#'  #Cumulative probability of waiting 1 units 
+#'  #Cumulative probability of waiting 1 unit 
 #'  #of time in the system
 #'  FWq(M_M_1(), 1)
 #'  FWq(M_M_S_K(), 1)
@@ -221,31 +221,34 @@ print.MarkovianModel <- function(x, ...) {
 
 #' Shows the main graphics of the parameters of a Markovian Model
 #' 
-#' @param object Markovian Model
-#' @param t Range of t
-#' @param n Range of n
-#' @param only String that allows to show only one of the variables. Can be "t" or "n".
-#' @param graphics Type of graphics: "graphics" uses the basic R plot and "ggplot2" the library ggplot2
-#' @param ... Further arguments passed to or from other methods.
-#' @method summary MarkovianModel
+#' @param x Markovian Model
+#' @param t range for drawing the waiting plots
+#' @param n range for drawing the probabilities plot
+#' @param only Allow to only show the waiting plots or the probabilites plots.
+#'             Must be NULL, "t" or "n"
+#' @param graphics library used to draw the plots 
+#' @param ... Further arguments
+#' @method plot MarkovianModel
+#' @details
+#' \code{plot.MarkovianModel} implements the function for an object of class MarkovianModel.
 #' @export
-summary.MarkovianModel <- function(object, t=list(range=seq(object$out$w, object$out$w*3, length.out=100)), n=c(0:5), only=NULL, graphics="ggplot2",...) {
+plot.MarkovianModel <- function(x, t=list(range=seq(x$out$w, x$out$w*3, length.out=100)), n=c(0:5), only=NULL, graphics="ggplot2",...) {
   switch(graphics,
       "ggplot2" = {if (is.null(only)) {
-                        layout(matrix(c(1,2), nrow=2))
-                        gridExtra::grid.arrange(summaryWtWqt(object, t, graphics),
-                                     summaryPnQn(object, n, graphics))
+                        graphics::layout(matrix(c(1,2), nrow=2))
+                        gridExtra::grid.arrange(summaryWtWqt(x, t, graphics),
+                                     summaryPnQn(x, n, graphics))
                    } else if(only == "t") 
-                          summaryWtWqt(object, t, graphics)
+                          summaryWtWqt(x, t, graphics)
                      else if(only == "n") 
-                          summaryPnQn(object, n , graphics)
+                          summaryPnQn(x, n , graphics)
                    },
       "graphics"= {if (is.null(only))
-                        par(mfrow=c(2,1)) 
+                        graphics::par(mfrow=c(2,1)) 
                    if(is.null(only) || only == "t" ) 
-                        summaryWtWqt(object, t, graphics)
+                        summaryWtWqt(x, t, graphics)
                    if(is.null(only) || only == "n" )
-                        summaryPnQn(object, n , graphics)
+                        summaryPnQn(x, n , graphics)
       
       })
 }
@@ -257,11 +260,9 @@ summary.MarkovianModel <- function(object, t=list(range=seq(object$out$w, object
 #' @param t Range of t
 #' @param graphics Type of graphics: "graphics" uses the basic R plot and "ggplot2" the library ggplot2
 #' @keywords internal
-#' @export
 summaryWtWqt <- function(object, t, graphics="ggplot2") {
   try({
     epsilon <- 0.001
-    
     if (is.list(t)) {
       searchvalues <- FW(object, t$range)
       closeone <- t$range[which.min(1-searchvalues)]
@@ -271,9 +272,9 @@ summaryWtWqt <- function(object, t, graphics="ggplot2") {
     switch(graphics,
            "graphics" = {                  
                   plot(data$t, data$W, col="red", type="l", ylim=c(0,1),  xlab="t", ylab="W(t) & Wq(t)", ann=FALSE)
-                  lines(data$t, data$Wq, col="blue")
-                  legend("bottomright", c("W", "Wq"), lty =c(1,1), col = c("red", "blue"), bty="n")
-                  title(main=paste("Distribution functions of waiting times (t from ", data$t[1], " to ", data$t[length(data$t)], ")", sep=""))
+                  graphics::lines(data$t, data$Wq, col="blue")
+                  graphics::legend("bottomright", c("W", "Wq"), lty =c(1,1), col = c("red", "blue"), bty="n")
+                  graphics::title(main=paste("Distribution functions of waiting times (t from ", data$t[1], " to ", data$t[length(data$t)], ")", sep=""))
            },
            "ggplot2" = {
                   value <- variable <- NULL
@@ -293,17 +294,16 @@ summaryWtWqt <- function(object, t, graphics="ggplot2") {
 #' @param n Range of n
 #' @param graphics Type of graphics: "graphics" uses the basic R plot and "ggplot2" the library ggplot2
 #' @keywords internal
-#' @export
 summaryPnQn <- function(object, n, graphics="ggplot2") {
   switch(graphics,
          "graphics" = {
               tryCatch({
-                barplot(rbind(Qn(object, n), Pn(object, n)), names.arg=n, col=c("blue", "red"),  legend.text=c("Qn", "Pn"), beside=TRUE)
-                legend(0, 0, legend=c("Qn", "Pn"))
+                graphics::barplot(rbind(Qn(object, n), Pn(object, n)), names.arg=n, col=c("blue", "red"),  legend.text=c("Qn", "Pn"), beside=TRUE)
+                graphics::legend(0, 0, legend=c("Qn", "Pn"))
               }, error=function(e) {
-                barplot(Pn(object, n), col="red", legend.text="Pn")
+                graphics::barplot(Pn(object, n), col="red", legend.text="Pn")
               })
-              title(main=paste("Probability of n customers in the system (n from ", n[1], " to ", n[length(n)], ")", sep=""))
+              graphics::title(main=paste("Probability of n customers in the system (n from ", n[1], " to ", n[length(n)], ")", sep=""))
          },
          "ggplot2" = {
              tryCatch({
@@ -321,7 +321,7 @@ summaryPnQn <- function(object, n, graphics="ggplot2") {
          })
 }
 
-#' Returns the maximun value of n that satisfies the condition \ifelse{latex}{\deqn{P_{n}}}{\out{P<sub>n</sub>}} > 0
+#' Returns the maximun value of n that satisfies the condition \ifelse{latex}{\eqn{P_{n}}}{\out{P<sub>n</sub>}} > 0
 #' 
 #' @param qm object MarkovianModel
 #' @rdname maxCustomers
